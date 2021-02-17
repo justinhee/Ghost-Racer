@@ -6,4 +6,18 @@
 //  Copyright © 2021 David Smallberg. All rights reserved.
 //
 
-#include "Damageable.hpp"
+#include "Damageable.h"
+
+Damageable::Damageable(int health) : m_health(health)
+{}
+
+
+int Damageable::getHealth() const
+{
+    return m_health;
+}
+
+void Damageable::damage(int health)
+{
+    m_health -= health;
+}
