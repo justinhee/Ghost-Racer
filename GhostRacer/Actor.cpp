@@ -9,6 +9,11 @@ bool Actor::isAlive() const
     return m_alive;
 }
 
+bool Actor::isCollisionAvoidanceWorthy()
+{
+    return false;
+}
+
 StudentWorld* Actor::getWorld() const
 {
     return m_world;

@@ -6,9 +6,18 @@
 //  Copyright © 2021 David Smallberg. All rights reserved.
 //
 
-#ifndef HumanPed_hpp
-#define HumanPed_hpp
+#ifndef HUMANPED_H
+#define HUMANPED_H
 
-#include <stdio.h>
+#include "GameConstants.h"
+#include "Pedestrian.h"
 
-#endif /* HumanPed_hpp */
+class StudentWorld;
+class HumanPed : public Pedestrian
+{
+public:
+    HumanPed(StudentWorld* world, double startX, double startY, int imageID = IID_HUMAN_PED, int startDirection = 0, double size = 2.0);
+    virtual void doSomething();
+};
+
+#endif /* HUMANPED_H */

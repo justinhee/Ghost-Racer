@@ -12,7 +12,7 @@
 
 GhostRacer::GhostRacer(StudentWorld* world, int imageID, double startX, double startY, int startDirection, double size, int depth, int VSpeed, int HSpeed, int health, int holyWaterSpray) :
 Actor(world, imageID, startX, startY, startDirection, size, depth, VSpeed, HSpeed),
-Damageable(health),
+m_health(health),
 m_holyWaterSpray(holyWaterSpray)
 {
 
@@ -85,9 +85,20 @@ bool GhostRacer::isCollisionAvoidanceWorthy() const
     return true;
 }
 
-bool GhostRacer::isAlive() const
+void GhostRacer::die()
 {
-    return getHealth() > 0;
+    Actor::die();
+    getWorld()->decLives();
 }
 
+void GhostRacer::damage(int damage)
+{
+    m_health -= damage;
+    if(m_health < 0)
+        die();
+}
 
+int GhostRacer::getHealth() const
+{
+    return m_health;
+}

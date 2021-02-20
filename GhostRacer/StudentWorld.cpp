@@ -2,7 +2,13 @@
 #include "GameConstants.h"
 #include "GhostRacer.h"
 #include "BorderLine.h"
+#include "ZombiePed.h"
+#include "HumanPed.h"
+#include "SoulGoodie.h"
 //#include "Actor.h"
+
+#include <iostream>
+#include <cmath>
 #include <string>
 using namespace std;
 
@@ -20,7 +26,15 @@ GameWorld* createStudentWorld(string assetPath)
 StudentWorld::StudentWorld(string assetPath)
 : GameWorld(assetPath)
 {
+    m_GhostRacer = nullptr;
+    m_savedSouls = 0;
+    m_lastBorderY = 0;
     
+}
+
+StudentWorld::~StudentWorld()
+{
+    cleanUp();
 }
 
 int StudentWorld::init()
@@ -92,6 +106,30 @@ int StudentWorld::move()
         m_actors.push_back(new BorderLine(this, IID_WHITE_BORDER_LINE, RIGHT_EDGE - ROAD_WIDTH/3, new_border_y));
         m_lastBorderY = new_border_y;
     }
+    
+    //ADD NEW ZOMBIE PEDESTRIANS
+    int chanceZombiePed = max(100-getLevel()*10, 20);
+    if(randInt(0, chanceZombiePed-1) == 0)
+    {
+        m_actors.push_back(new ZombiePed(this, randInt(0, VIEW_WIDTH), VIEW_HEIGHT));
+    }
+    
+    
+    
+    
+    //ADD NEW HUMAN PEDESTRIANS
+    int chanceHumanPed = max(200-getLevel()*10, 30);
+    if(randInt(0, chanceHumanPed-1)==0)
+    {
+        m_actors.push_back(new HumanPed(this, randInt(0, VIEW_WIDTH), VIEW_HEIGHT));
+    }
+    
+    //ADD NEW LOST SOUL GOODIES
+    //TODO: check interval for randInt
+    if(randInt(0, 99) == 0)
+    {
+        m_actors.push_back(new SoulGoodie(this, randInt(0, VIEW_WIDTH), VIEW_HEIGHT));
+    }
         
     
     return GWSTATUS_CONTINUE_GAME;
@@ -99,6 +137,12 @@ int StudentWorld::move()
 
 void StudentWorld::cleanUp()
 {
+    for(vector<Actor*>::iterator p = m_actors.begin(); p != m_actors.end();)
+    {
+        Actor* temp = *p;
+        p = m_actors.erase(p);
+        delete temp;
+    }
 }
 
 GhostRacer* StudentWorld::getGhostRacer() const
@@ -106,8 +150,27 @@ GhostRacer* StudentWorld::getGhostRacer() const
     return m_GhostRacer;
 }
 
-bool StudentWorld::overlap(Actor *a1, Actor *a2) const
+//TODO:
+bool StudentWorld::overlap(Actor* a1, Actor* a2) const
 {
+    double delta_x = abs(a1->getX() - a2->getX());
+    double delta_y = abs(a1->getY() - a2->getY());
+    double radius_sum = a1->getRadius() + a2->getRadius();
+    if(delta_x < radius_sum*.25 && delta_y < radius_sum*.6)
+    {
+        std::cerr<<"collision" << endl;
+        return true;
+        
+    }
     return false;
 }
 
+void StudentWorld::saveSoul()
+{
+    m_savedSouls++;
+}
+
+void StudentWorld::addtoScore(int score)
+{
+    m_score += score;
+}

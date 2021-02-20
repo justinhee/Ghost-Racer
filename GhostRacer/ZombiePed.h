@@ -6,9 +6,20 @@
 //  Copyright © 2021 David Smallberg. All rights reserved.
 //
 
-#ifndef ZombiePed_hpp
-#define ZombiePed_hpp
+#ifndef ZOMBIEPED_H
+#define ZOMBIEPED_H
+#include "GameConstants.h"
+#include "Pedestrian.h"
 
-#include <stdio.h>
+class StudentWorld;
+class ZombiePed : public Pedestrian
+{
+public:
+    ZombiePed(StudentWorld* world, double startX, double startY, int imageID = IID_ZOMBIE_PED, int startDirection = 0, double size = 3.0, int timeToGrunt = 0);
+    virtual void doSomething();
+private:
+    int m_timeToGrunt;
+};
 
-#endif /* ZombiePed_hpp */
+
+#endif /* ZOMBIEPED_H */

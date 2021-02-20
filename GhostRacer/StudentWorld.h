@@ -15,16 +15,21 @@ class StudentWorld : public GameWorld
 {
 public:
     StudentWorld(std::string assetPath);
+    ~StudentWorld();
     virtual int init();
     virtual int move();
     virtual void cleanUp();
     GhostRacer* getGhostRacer() const;
     bool overlap(Actor* a1, Actor* a2) const;
+    void saveSoul();
+    void addtoScore(int score);
     
 private:
     std::vector<Actor*> m_actors;
     GhostRacer* m_GhostRacer;
     double m_lastBorderY;
+    int m_savedSouls;
+    int m_score;
 };
 
 #endif // STUDENTWORLD_H_
