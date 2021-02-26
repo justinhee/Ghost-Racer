@@ -13,7 +13,7 @@ class StudentWorld;
 class Actor : public GraphObject
 {
 public:
-    Actor(StudentWorld* world, int imageID, double startX, double startY, int startDirection, double size, int depth, double VSpeed = 0, double HSpeed = 0, bool alive = true);
+    Actor(StudentWorld* world, int imageID, double startX, double startY, int startDirection, double size, int depth, double VSpeed = 0, double HSpeed = 0);
     virtual void doSomething() = 0;
     virtual bool isAlive() const;
     virtual bool isCollisionAvoidanceWorthy();
@@ -23,7 +23,7 @@ public:
     double getHSpeed() const;
     void setHSpeed(double newHSpeed);
     virtual void die();
-    virtual void move();
+    virtual bool move();
     
 private:
     StudentWorld* m_world;
@@ -32,20 +32,50 @@ private:
     int m_HSpeed;
 };
 
-//GHOSTRACER CLASS
-class GhostRacer : public Actor
+//AGENT CLASS
+class Agent : public Actor
 {
 public:
-    GhostRacer(StudentWorld* world, int imageID = IID_GHOST_RACER, double startX = 128, double startY = 32, int startDirection = 90, double size = 4.0, int depth = 0, double VSpeed = 0, double HSpeed = 0, int health = 100, int holyWaterSpray = 10);
-    virtual void doSomething();
+    Agent(StudentWorld* world, int imageID, double startX, double startY, int startDirection, double size, int hp, double VSpeed, double HSpeed);
     virtual bool isCollisionAvoidanceWorthy() const;
-    virtual void die();
-    void damage(int damage);
-    void heal(int health);
+
+      // Get hit points.
     int getHealth() const;
+
+      // Increase hit points by hp.
+    void heal(int health);
+
+      // Do what the spec says happens when hp units of damage is inflicted.
+      // Return true if this agent dies as a result, otherwise false.
+    virtual bool damage(int damage);
+
+      // What sound should play when this agent is damaged but does not die?
+    virtual int soundWhenHurt() const = 0;
+
+      // What sound should play when this agent is damaged and dies?
+    virtual int soundWhenDie() const = 0;
+private:
+    int m_health;
+};
+
+
+
+
+
+
+
+
+//GHOSTRACER CLASS
+class GhostRacer : public Agent
+{
+public:
+    GhostRacer(StudentWorld* world);
+    virtual void doSomething();
+    virtual void die();
+    virtual int soundWhenHurt() const;
+    virtual int soundWhenDie() const;
 private:
     int m_holyWaterSpray;
-    int m_health;
 };
 
 //BORDERLINE CLASS
@@ -57,28 +87,23 @@ public:
 };
 
 //PEDESTRIAN CLASS
-class Pedestrian : public Actor
+class Pedestrian : public Agent
 {
 public:
-    Pedestrian(StudentWorld* world, int imageID, double startX, double startY, int startDirection, double size, int depth = 0, double VSpeed = -4, double HSpeed = 0, int health = 2, int movementPlanDistance = 0);
-    virtual bool isCollisionAvoidanceWorthy() const;
-    virtual void doSomething();
-    void setMovementPlanDistance(int d);
-    int getMovementPlanDistance() const;
-    virtual void damage(int damage);
-    int getHealth() const;
+    Pedestrian(StudentWorld* world, int imageID, double startX, double startY, double size, double VSpeed = -4, double HSpeed = 0, int health = 2, int movementPlanDistance = 0);
+    void moveAndPossiblyPickPlan();
+    virtual int soundWhenHurt() const;
+    virtual int soundWhenDie() const;
 private:
     int m_movementPlanDistance;
-    int m_health;
 };
 
 //ZOMBIEPEDESTRIAN CLASS
 class ZombiePed : public Pedestrian
 {
 public:
-    ZombiePed(StudentWorld* world, double startX, double startY, int imageID = IID_ZOMBIE_PED, int startDirection = 0, double size = 3.0, int timeToGrunt = 0);
+    ZombiePed(StudentWorld* world, double startX, double startY, double size = 3.0, int timeToGrunt = 0);
     virtual void doSomething();
-    virtual void damage(int damage);
 private:
     int m_timeToGrunt;
 };

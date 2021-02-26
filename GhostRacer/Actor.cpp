@@ -4,7 +4,7 @@
 // Students:  Add code to this file, Actor.h, StudentWorld.h, and StudentWorld.cpp
 //goodies, projetile
 //ACTOR IMPLEMENTATION
-Actor::Actor(StudentWorld* world, int imageID, double startX, double startY, int startDirection, double size, int depth, double VSpeed, double HSpeed, bool alive) : GraphObject(imageID, startX, startY, startDirection, size, depth), m_world(world), m_alive(alive), m_VSpeed(VSpeed), m_HSpeed(HSpeed)
+Actor::Actor(StudentWorld* world, int imageID, double startX, double startY, int startDirection, double size, int depth, double VSpeed, double HSpeed) : GraphObject(imageID, startX, startY, startDirection, size, depth), m_world(world), m_alive(true), m_VSpeed(VSpeed), m_HSpeed(HSpeed)
 {}
 
 bool Actor::isAlive() const
@@ -47,7 +47,7 @@ void Actor::die()
     m_alive = false;
 }
 
-void Actor::move()
+bool Actor::move()
 {
     double vert_speed = getVSpeed()-getWorld()->getGhostRacer()->getVSpeed();
     double horiz_speed = getHSpeed();
@@ -56,20 +56,58 @@ void Actor::move()
     double new_x = getX() + horiz_speed;
     moveTo(new_x, new_y);
     if(getX() < 0 || getY() < 0 || getX() > VIEW_WIDTH || getY() > VIEW_HEIGHT)
+    {
         die();
+        return false;
+    }
+    return true;
 
+}
+
+//AGENT IMPLEMENTATION
+Agent::Agent(StudentWorld* world, int imageID, double startX, double startY, int startDirection, double size, int hp, double VSpeed, double HSpeed) : Actor(world, imageID, startX, startY, startDirection, size, 0, VSpeed, HSpeed), m_health(hp)
+{}
+
+bool Agent::isCollisionAvoidanceWorthy() const
+{
+    return true;
+}
+
+int Agent::getHealth() const
+{
+    return m_health;
+}
+
+void Agent::heal(int health)
+{
+    if(m_health + health > 100)
+        m_health = 100;
+    else
+        m_health += health;
+}
+
+bool Agent::damage(int damage)
+{
+    m_health -= damage;
+    if(m_health < 0)
+    {
+        getWorld()->playSound(soundWhenDie());
+        die();
+        return true;
+    }
+    else
+        getWorld()->playSound(soundWhenHurt());
+    return false;
 }
 
 
 
 //GHOSTRACER IMPLEMENTATION
-GhostRacer::GhostRacer(StudentWorld* world, int imageID, double startX, double startY, int startDirection, double size, int depth, double VSpeed, double HSpeed, int health, int holyWaterSpray) :
-Actor(world, imageID, startX, startY, startDirection, size, depth, VSpeed, HSpeed),
-m_holyWaterSpray(holyWaterSpray),
-m_health(health)
+GhostRacer::GhostRacer(StudentWorld* world) :
+Agent(world, IID_GHOST_RACER, 128, 32, 90, 4.0, 100, 0, 0),
+m_holyWaterSpray(10)
+{}
 
-{
-}
 void GhostRacer::doSomething()
 {
     if(!isAlive())
@@ -78,13 +116,11 @@ void GhostRacer::doSomething()
     {
         damage(10);
         setDirection(82);
-        getWorld()->playSound(SOUND_VEHICLE_CRASH);
     }
     else if(getX() >= ROAD_CENTER + ROAD_WIDTH/2)
     {
         damage(10);
         setDirection(98);
-        getWorld()->playSound(SOUND_VEHICLE_CRASH);
     }
     else
     {
@@ -133,10 +169,6 @@ void GhostRacer::doSomething()
     
     
 }
-bool GhostRacer::isCollisionAvoidanceWorthy() const
-{
-    return true;
-}
 
 void GhostRacer::die()
 {
@@ -144,25 +176,16 @@ void GhostRacer::die()
     getWorld()->decLives();
 }
 
-void GhostRacer::damage(int damage)
+int GhostRacer::soundWhenHurt() const
 {
-    m_health -= damage;
-    if(m_health < 0)
-        die();
+    return SOUND_VEHICLE_CRASH;
 }
 
-void GhostRacer::heal(int health)
+int GhostRacer::soundWhenDie() const
 {
-    if(m_health + health > 100)
-        m_health = 100;
-    else
-        m_health += health;
+    return SOUND_PLAYER_DIE;
 }
 
-int GhostRacer::getHealth() const
-{
-    return m_health;
-}
 
 //BORDERLINE IMPLEMENTATION
 BorderLine::BorderLine(StudentWorld* world, int imageID, double startX, double startY, int startDirection, double size, int depth, double VSpeed, double HSpeed) :
@@ -175,51 +198,49 @@ void BorderLine::doSomething()
 }
 
 //PEDESTRIAN IMPLEMENTATION
-Pedestrian::Pedestrian(StudentWorld* world, int imageID, double startX, double startY, int startDirection, double size, int depth, double VSpeed, double HSpeed, int health, int movementPlanDistance) :
-Actor(world, imageID, startX, startY, startDirection, size, depth, VSpeed, HSpeed),
-m_movementPlanDistance(movementPlanDistance),
-m_health(health)
-
+Pedestrian::Pedestrian(StudentWorld* world, int imageID, double startX, double startY, double size, double VSpeed, double HSpeed, int health, int movementPlanDistance) :
+Agent(world, imageID, startX, startY, 0, size, 2, -4, 0),
+m_movementPlanDistance(movementPlanDistance)
 {}
 
-bool Pedestrian::isCollisionAvoidanceWorthy() const
+void Pedestrian::moveAndPossiblyPickPlan()
 {
-    return true;
-}
-
-void Pedestrian::doSomething()
-{}
-
-void Pedestrian::setMovementPlanDistance(int d)
-{
-    m_movementPlanDistance = d;
-}
-
-int Pedestrian::getMovementPlanDistance() const
-{
-    return m_movementPlanDistance;
-}
-
-void Pedestrian::damage(int damage)
-{
-    m_health -= damage;
-    if(m_health < 0)
+    if(!move())
     {
-        getWorld()->playSound(SOUND_PED_DIE);
-        die();
+        return;
     }
-    else
-        getWorld()->playSound(SOUND_PED_HURT);
+    if(--m_movementPlanDistance <= 0)
+    {
+        int newHSpeed = 0;
+        while(newHSpeed == 0)
+        {
+            newHSpeed = randInt(-3, 3);
+        }
+        setHSpeed(newHSpeed);
+        int newDistance = randInt(4, 32);
+        m_movementPlanDistance = newDistance;
+        if(newHSpeed < 0)
+            setDirection(180);
+        else
+            setDirection(0);
+    }
 }
 
-int Pedestrian::getHealth() const
+int Pedestrian::soundWhenHurt() const
 {
-    return m_health;
+    return SOUND_PED_HURT;
 }
+
+int Pedestrian::soundWhenDie() const
+{
+    return SOUND_PED_DIE;
+}
+
+
 
 //ZOMBIEPEDESTRIAN IMPLEMENTATION
-ZombiePed::ZombiePed(StudentWorld* world, double startX, double startY, int imageID, int startDirection, double size, int timeToGrunt) :
-Pedestrian(world, imageID, startX, startY, startDirection, size),
+ZombiePed::ZombiePed(StudentWorld* world, double startX, double startY, double size, int timeToGrunt) :
+Pedestrian(world, IID_ZOMBIE_PED, startX, startY, 0, size),
 m_timeToGrunt(timeToGrunt)
 {}
 
@@ -259,43 +280,24 @@ void ZombiePed::doSomething()
     }
     
     //MOVE
-    move();
-    
-    if(getMovementPlanDistance() > 0)
-    {
-        setMovementPlanDistance(getMovementPlanDistance()-1);
-        return;
-    }
-    else {
-        int newHSpeed = 0;
-        while(newHSpeed == 0)
-        {
-            newHSpeed = randInt(-3, 3);
-        }
-        setHSpeed(newHSpeed);
-        int newDistance = randInt(4, 32);
-        setMovementPlanDistance(newDistance);
-        if(newHSpeed < 0)
-            setDirection(180);
-        else
-            setDirection(0);
-    }
+    moveAndPossiblyPickPlan();
 
     
 }
 
-void ZombiePed::damage(int damage)
-{
-    Pedestrian::damage(damage);
-    if(!isAlive() && !getWorld()->overlap(this, getWorld()->getGhostRacer()))
-    {
-        if(randInt(1,5)==1)
-        {
-            getWorld()->addActor(new HealingGoodie(getWorld(), getX(), getY()));
-        }
-    }
-    
-}
+//bool ZombiePed::damage(int damage)
+//{
+//
+//    if(Pedestrian::damage(damage) && !getWorld()->overlap(this, getWorld()->getGhostRacer()))
+//    {
+//        if(randInt(1,5)==1)
+//        {
+//            getWorld()->addActor(new HealingGoodie(getWorld(), getX(), getY()));
+//        }
+//    }
+//    return !isAlive();
+//
+//}
 
 //HUMANPEDESTRIAN IMPLEMENTATION
 HumanPed::HumanPed(StudentWorld* world, double startX, double startY, int imageID, int startDirection, double size) :
@@ -313,27 +315,7 @@ void HumanPed::doSomething()
         return;
     }
     
-    move();
-    
-    setMovementPlanDistance(getMovementPlanDistance()-1);
-    if(getMovementPlanDistance() > 0)
-    {
-        return;
-    }
-    else {
-        int newHSpeed = 0;
-        while(newHSpeed == 0)
-        {
-            newHSpeed = randInt(-3, 3);
-        }
-        setHSpeed(newHSpeed);
-        int newDistance = randInt(4, 32);
-        setMovementPlanDistance(newDistance);
-        if(newHSpeed < 0)
-            setDirection(180);
-        else
-            setDirection(0);
-    }
+    moveAndPossiblyPickPlan();
 }
 
 //SOULGOODIE IMPLEMENTATION
