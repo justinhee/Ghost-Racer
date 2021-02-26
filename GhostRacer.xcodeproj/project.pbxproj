@@ -7,12 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		35533CAC25DD012F0037744C /* GhostRacer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 35533CAA25DD012F0037744C /* GhostRacer.cpp */; };
-		35533CB125DD08160037744C /* BorderLine.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 35533CAF25DD08160037744C /* BorderLine.cpp */; };
-		35533CB625DD0B410037744C /* Pedestrian.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 35533CB425DD0B410037744C /* Pedestrian.cpp */; };
-		355C6F5E25DE08B70088B77D /* ZombiePed.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 355C6F5C25DE08B70088B77D /* ZombiePed.cpp */; };
-		355C6F6325DE09F00088B77D /* HumanPed.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 355C6F6125DE09F00088B77D /* HumanPed.cpp */; };
-		355C6F7525E06E300088B77D /* SoulGoodie.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 355C6F7325E06E300088B77D /* SoulGoodie.cpp */; };
 		4B91F8BF2033F3F8003AFA78 /* GameWorld.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4B91F8B12033F3F7003AFA78 /* GameWorld.cpp */; };
 		4B91F8C02033F3F8003AFA78 /* StudentWorld.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4B91F8B22033F3F7003AFA78 /* StudentWorld.cpp */; };
 		4B91F8C12033F3F8003AFA78 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4B91F8B42033F3F7003AFA78 /* main.cpp */; };
@@ -34,18 +28,6 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		35533CAA25DD012F0037744C /* GhostRacer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = GhostRacer.cpp; sourceTree = "<group>"; };
-		35533CAB25DD012F0037744C /* GhostRacer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GhostRacer.h; sourceTree = "<group>"; };
-		35533CAF25DD08160037744C /* BorderLine.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = BorderLine.cpp; sourceTree = "<group>"; };
-		35533CB025DD08160037744C /* BorderLine.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BorderLine.h; sourceTree = "<group>"; };
-		35533CB425DD0B410037744C /* Pedestrian.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Pedestrian.cpp; sourceTree = "<group>"; };
-		35533CB525DD0B410037744C /* Pedestrian.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Pedestrian.h; sourceTree = "<group>"; };
-		355C6F5C25DE08B70088B77D /* ZombiePed.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ZombiePed.cpp; sourceTree = "<group>"; };
-		355C6F5D25DE08B70088B77D /* ZombiePed.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ZombiePed.h; sourceTree = "<group>"; };
-		355C6F6125DE09F00088B77D /* HumanPed.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = HumanPed.cpp; sourceTree = "<group>"; };
-		355C6F6225DE09F00088B77D /* HumanPed.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HumanPed.h; sourceTree = "<group>"; };
-		355C6F7325E06E300088B77D /* SoulGoodie.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = SoulGoodie.cpp; sourceTree = "<group>"; };
-		355C6F7425E06E300088B77D /* SoulGoodie.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SoulGoodie.h; sourceTree = "<group>"; };
 		4B91F8A52033F260003AFA78 /* GhostRacer */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = GhostRacer; sourceTree = BUILT_PRODUCTS_DIR; };
 		4B91F8AF2033F3F7003AFA78 /* GraphObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GraphObject.h; sourceTree = "<group>"; };
 		4B91F8B02033F3F7003AFA78 /* Actor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Actor.h; sourceTree = "<group>"; };
@@ -109,18 +91,6 @@
 				4B91F8BC2033F3F7003AFA78 /* SpriteManager.h */,
 				4B91F8B22033F3F7003AFA78 /* StudentWorld.cpp */,
 				4B91F8BE2033F3F8003AFA78 /* StudentWorld.h */,
-				35533CAA25DD012F0037744C /* GhostRacer.cpp */,
-				35533CAB25DD012F0037744C /* GhostRacer.h */,
-				35533CAF25DD08160037744C /* BorderLine.cpp */,
-				35533CB025DD08160037744C /* BorderLine.h */,
-				35533CB425DD0B410037744C /* Pedestrian.cpp */,
-				35533CB525DD0B410037744C /* Pedestrian.h */,
-				355C6F5C25DE08B70088B77D /* ZombiePed.cpp */,
-				355C6F5D25DE08B70088B77D /* ZombiePed.h */,
-				355C6F6125DE09F00088B77D /* HumanPed.cpp */,
-				355C6F6225DE09F00088B77D /* HumanPed.h */,
-				355C6F7325E06E300088B77D /* SoulGoodie.cpp */,
-				355C6F7425E06E300088B77D /* SoulGoodie.h */,
 			);
 			path = GhostRacer;
 			sourceTree = "<group>";
@@ -192,16 +162,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				355C6F6325DE09F00088B77D /* HumanPed.cpp in Sources */,
-				355C6F7525E06E300088B77D /* SoulGoodie.cpp in Sources */,
-				35533CB125DD08160037744C /* BorderLine.cpp in Sources */,
 				4B91F8C32033F3F8003AFA78 /* GameController.cpp in Sources */,
-				35533CAC25DD012F0037744C /* GhostRacer.cpp in Sources */,
 				4B91F8C02033F3F8003AFA78 /* StudentWorld.cpp in Sources */,
-				355C6F5E25DE08B70088B77D /* ZombiePed.cpp in Sources */,
 				4B91F8BF2033F3F8003AFA78 /* GameWorld.cpp in Sources */,
 				4B91F8C12033F3F8003AFA78 /* main.cpp in Sources */,
-				35533CB625DD0B410037744C /* Pedestrian.cpp in Sources */,
 				4B91F8C22033F3F8003AFA78 /* Actor.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

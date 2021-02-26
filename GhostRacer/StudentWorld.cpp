@@ -1,10 +1,6 @@
 #include "StudentWorld.h"
 #include "GameConstants.h"
-#include "GhostRacer.h"
-#include "BorderLine.h"
-#include "ZombiePed.h"
-#include "HumanPed.h"
-#include "SoulGoodie.h"
+
 //#include "Actor.h"
 
 #include <iostream>
@@ -18,19 +14,14 @@ const int RIGHT_EDGE = ROAD_CENTER + ROAD_WIDTH/2;
 
 GameWorld* createStudentWorld(string assetPath)
 {
-	return new StudentWorld(assetPath);
+    return new StudentWorld(assetPath);
 }
 
 // Students:  Add code to this file, StudentWorld.h, Actor.h, and Actor.cpp
 
 StudentWorld::StudentWorld(string assetPath)
-: GameWorld(assetPath)
-{
-    m_GhostRacer = nullptr;
-    m_savedSouls = 0;
-    m_lastBorderY = 0;
-    
-}
+: GameWorld(assetPath), m_GhostRacer(nullptr), m_lastBorderY(0), m_savedSouls(0), m_score(0)
+{}
 
 StudentWorld::~StudentWorld()
 {
@@ -158,9 +149,7 @@ bool StudentWorld::overlap(Actor* a1, Actor* a2) const
     double radius_sum = a1->getRadius() + a2->getRadius();
     if(delta_x < radius_sum*.25 && delta_y < radius_sum*.6)
     {
-        std::cerr<<"collision" << endl;
         return true;
-        
     }
     return false;
 }
@@ -173,4 +162,9 @@ void StudentWorld::saveSoul()
 void StudentWorld::addtoScore(int score)
 {
     m_score += score;
+}
+
+void StudentWorld::addActor(Actor* actor)
+{
+    m_actors.push_back(actor);
 }
