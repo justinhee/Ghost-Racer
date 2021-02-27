@@ -133,24 +133,60 @@ private:
 };
 
 
-
-
-//SOULGOODIE CLASS
-class SoulGoodie : public Actor
+//GHOSTRACERACTIVATEDOBJECT CLASS
+class GhostRacerActivatedObject : public Actor
 {
 public:
-    SoulGoodie(StudentWorld* world, double startX, double startY, int imageID = IID_SOUL_GOODIE, int startDirection = 0, double size = 4.0, int depth = 2, double VSpeed = -4, double HSpeed = 0);
+    GhostRacerActivatedObject(StudentWorld* sw, int imageID, double x, double y, double size, int dir);
     virtual void doSomething();
+    virtual bool beSprayedIfAppropriate();
+
+      // Do the object's special activity (increase health, spin Ghostracer, etc.)
+    virtual void doActivity(GhostRacer* gr) = 0;
+
+      // Return the object's increase to the score when activated.
+    virtual int getScoreIncrease() const = 0;
+
+      // Return the sound to be played when the object is activated.
+    virtual int getSound() const;
+
+      // Return whether the object dies after activation.
+    virtual bool selfDestructs() const = 0;
+
+      // Return whether the object is affected by a holy water projectile.
+    virtual bool isSprayable() const = 0;
+};
+
+//SOULGOODIE CLASS
+class SoulGoodie : public GhostRacerActivatedObject
+{
+public:
+    SoulGoodie(StudentWorld* world, double startX, double startY);
+    virtual void doActivity(GhostRacer *gr);
+    virtual int getScoreIncrease() const;
+    virtual int getSound() const;
+    virtual bool selfDestructs() const;
+    virtual void doSomething();
+    virtual bool isSprayable() const;
 };
 
 //HEALINGGOODIE CLASS
-class HealingGoodie : public Actor
+class HealingGoodie : public GhostRacerActivatedObject
 {
 public:
-    HealingGoodie(StudentWorld* world, double startX, double startY, int imageID = IID_HEAL_GOODIE, int startDirection = 0, double size = 1.0, int depth = 2, double VSpeed = -4, double HSpeed = 0);
+    HealingGoodie(StudentWorld* world, double startX, double startYZ);
     virtual void doSomething();
+    virtual void doActivity(GhostRacer* gr);
+    virtual int getScoreIncrease() const;
+    virtual bool selfDestructs() const;
+    virtual bool isSprayable() const;
     
 };
+
+
+
+
+
 
 //SPRAY CLASS
 class Spray : public Actor

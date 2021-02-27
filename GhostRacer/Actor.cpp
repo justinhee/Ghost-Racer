@@ -501,41 +501,111 @@ int ZombieCab::soundWhenDie() const
     return SOUND_VEHICLE_DIE;
 }
 
-//SOULGOODIE IMPLEMENTATION
-SoulGoodie::SoulGoodie(StudentWorld* world, double startX, double startY, int imageID, int startDirection, double size, int depth, double VSpeed, double HSpeed) :
-Actor(world, IID_SOUL_GOODIE, startX, startY, startDirection, 4, 2, VSpeed, HSpeed)
+
+
+
+
+
+
+
+
+//GHOSTRACERACTIVATEDOBJECT IMPLEMENTATION
+GhostRacerActivatedObject::GhostRacerActivatedObject(StudentWorld* world, int imageID, double startX, double startY, double size, int dir) :
+Actor(world, imageID, startX, startY, dir, size, 2, -4)
 {}
 
-void SoulGoodie::doSomething()
+void GhostRacerActivatedObject::doSomething()
 {
-    //TODO: add if statement?
-    move();
+    if(!move())
+        return;
+    
     if(getWorld()->overlap(this, getWorld()->getGhostRacer()))
     {
-        getWorld()->saveSoul();
-        die();
-        getWorld()->playSound(SOUND_GOT_SOUL);
-        getWorld()->addtoScore(100);
+        doActivity(getWorld()->getGhostRacer());
+        if(selfDestructs())
+            die();
+        getWorld()->playSound(getSound());
+        getWorld()->addtoScore(getScoreIncrease());
     }
-    setDirection(getDirection()+10);
+}
+
+bool GhostRacerActivatedObject::beSprayedIfAppropriate()
+{
+    return false;
     
 }
 
-//HEALINGGOODIEIMPLEMENTATION
-HealingGoodie::HealingGoodie(StudentWorld* world, double startX, double startY, int imageID, int startDirection, double size, int depth, double VSpeed, double HSpeed) :
-Actor(world, IID_HEAL_GOODIE, startX, startY, startDirection, size, depth, VSpeed, HSpeed)
+      // Return the sound to be played when the object is activated.
+int GhostRacerActivatedObject::getSound() const
+{
+    return SOUND_GOT_GOODIE;
+}
+
+
+
+
+
+
+//SOULGOODIE IMPLEMENTATION
+SoulGoodie::SoulGoodie(StudentWorld* world, double startX, double startY) :
+GhostRacerActivatedObject(world, IID_SOUL_GOODIE, startX, startY, 4, 0)
 {}
+
+void SoulGoodie::doActivity(GhostRacer *gr)
+{
+    getWorld()->saveSoul();
+}
+
+int SoulGoodie::getScoreIncrease() const
+{
+    return 100;
+}
+
+int SoulGoodie::getSound() const
+{
+    return SOUND_GOT_SOUL;
+}
+
+bool SoulGoodie::selfDestructs() const
+{
+    return true;
+}
+ bool SoulGoodie::isSprayable() const
+{
+    return false;
+}
+
+void SoulGoodie::doSomething()
+{
+    GhostRacerActivatedObject::doSomething();
+    setDirection(getDirection()+10);
+}
+
+//HEALINGGOODIE IMPLEMENTATION
+HealingGoodie::HealingGoodie(StudentWorld* world, double startX, double startY) :
+GhostRacerActivatedObject(world, IID_HEAL_GOODIE, startX, startY, 1, 0)
+{}
+
 void HealingGoodie::doSomething()
 {
-    //TODO: add if statement
-    move();
-    if(getWorld()->overlap(this, getWorld()->getGhostRacer()))
-    {
-        getWorld()->getGhostRacer()->heal(10);
-        die();
-        getWorld()->playSound(SOUND_GOT_GOODIE);
-        getWorld()->addtoScore(250);
-    }
+    GhostRacerActivatedObject::doSomething();
+}
+
+void HealingGoodie::doActivity(GhostRacer* gr)
+{
+    gr->heal(10);
+}
+int HealingGoodie::getScoreIncrease() const
+{
+    return 250;
+}
+bool HealingGoodie::selfDestructs() const
+{
+    return true;
+}
+bool HealingGoodie::isSprayable() const
+{
+    return true;
 }
 
 
@@ -554,246 +624,3 @@ void HealingGoodie::doSomething()
 
 
 
-
-
-
-
-
-
-
-//#include "Actor.h"
-//#include "StudentWorld.h"
-//
-//
-//Actor::Actor(StudentWorld* sw, int imageID, double x, double y, double size, int dir, int depth, double VSpeed) : GraphObject(imageID, x, y, dir, size, depth), m_world(sw), m_alive(true), m_VSpeed(VSpeed)
-//{}
-//
-////      // Is this actor dead?
-//bool Actor::isDead() const
-//{
-//    return !m_alive;
-//}
-////
-////      // Mark this actor as dead.
-//void Actor::die()
-//{
-//    m_alive = false;
-//}
-////
-////      // Get this actor's world
-//StudentWorld* Actor::world() const
-//{
-//    return m_world;
-//}
-////
-////      // Get this actor's vertical speed.
-//double Actor::getVerticalSpeed() const
-//{
-//    return m_VSpeed;
-//}
-////
-////      // Set this actor's vertical speed.
-//void Actor::setVerticalSpeed(double speed)
-//{
-//    m_VSpeed = speed;
-//}
-////
-////      // If this actor is affected by holy water projectiles, then inflict that
-////      // affect on it and return true; otherwise, return false.
-//bool Actor::beSprayedIfAppropriate()
-//{
-//    return false;
-//}
-////
-////      // Does this object affect zombie cab placement and speed?
-////    virtual bool isCollisionAvoidanceWorthy() const;
-////
-////      // Adjust the x coordinate by dx to move to a position with a y coordinate
-////      // determined by this actor's vertical speed relative to GhostRacser's
-////      // vertical speed.  Return true if the new position is within the view;
-////      // otherwise, return false, with the actor dead.
-//bool Actor::moveRelativeToGhostRacerVerticalSpeed(double dx)
-//{
-//    double vert_speed = getVerticalSpeed()-world()->getGhostRacer()->getVerticalSpeed();
-//    double new_y = getY() + vert_speed;
-//    double new_x = getX() + dx;
-//    moveTo(new_x, new_y);
-//    if(getX() < 0 || getY() < 0 || getX() > VIEW_WIDTH || getY() > VIEW_HEIGHT)
-//    {
-//        die();
-//        return false;
-//    }
-//    return true;
-//
-//}
-////
-////};
-////
-//
-////BORDERLINE
-//
-//BorderLine::BorderLine(StudentWorld* sw, double x, double y, int imageID) :
-//Actor(sw, imageID, x, y, 2.0, 0, 2, -4.0)
-//{}
-////    virtual void doSomething();
-////};
-////
-////class Agent : public Actor
-////{
-////public:
-////    Agent(StudentWorld* sw, int imageID, double x, double y, double size, int dir, int hp);
-////    virtual bool isCollisionAvoidanceWorthy() const;
-////
-////      // Get hit points.
-////    int getHP() const;
-////
-////      // Increase hit points by hp.
-////    void getHP(int hp) const;
-////
-////      // Do what the spec says happens when hp units of damage is inflicted.
-////      // Return true if this agent dies as a result, otherwise false.
-////    virtual bool takeDamageAndPossiblyDie(int hp);
-////
-////      // What sound should play when this agent is damaged but does not die?
-////    virtual int soundWhenHurt();
-////
-////      // What sound should play when this agent is damaged and dies?
-////    virtual int soundWhenDie();
-////};
-////
-////class GhostRacer : public Agent
-////{
-////public:
-////    GhostRacer(StudentWorld* sw, double x, double y);
-////    virtual void doSomething();
-////    virtual int soundWhenDie() const;
-////
-////      // How many holy water projectiles does the object have?
-////    int getNumSprays() const;
-////
-////      // Increase the number of holy water projectiles the object has.
-////    void increaseSprays(int amt);
-////
-////      // Spin as a result of hitting an oil slick.
-////    void spin();
-////};
-////
-////class Pedestrian : public Agent
-////{
-////public:
-////    Pedestrian(StudentWorld* sw, int imageID, double x, double y, double size);
-////    virtual int soundWhenHurt() const;
-////    virtual int soundWhenDie() const;
-////
-////      // Get the pedestrian's horizontal speed
-////    int getHorizSpeed() const;
-////
-////      // Set the pedestrian's horizontal speed
-////    void setHorizSpeed(int s);
-////
-////      // Move the pedestrian.  If the pedestrian doesn't go off screen and
-////      // should pick a new movement plan, pick a new plan.
-////    void moveAndPossiblyPickPlan();
-////};
-////
-////class HumanPedestrian : public Pedestrian
-////{
-////public:
-////    HumanPedestrian(StudentWorld* sw, double x, double y);
-////    virtual void doSomething();
-////    virtual bool beSprayedIfAppropriate();
-////    virtual bool takeDamageAndPossiblyDie(int hp);
-////};
-////
-////class ZombiePedestrian : public Pedestrian
-////{
-////public:
-////    ZombiePedestrian(StudentWorld* sw, double x, double y);
-////    virtual void doSomething();
-////    virtual bool beSprayedIfAppropriate();
-////};
-////
-////class ZombieCab : public Agent
-////{
-////public:
-////    ZombieCab(StudentWorld* sw, double x, double y);
-////    virtual void doSomething();
-////    virtual bool beSprayedIfAppropriate();
-////};
-////
-////class Spray : public Actor
-////{
-////public:
-////    Spray(StudentWorld* sw, double x, double y, int dir);
-////    virtual void doSomething();
-////};
-////
-////class GhostRacerActivatedObject : public Actor
-////{
-////public:
-////    GhostRacerActivatedObject(StudentWorld* sw, int imageID, double x, double y, double size, int dir);
-////    virtual bool beSprayedIfAppropriate();
-////
-////      // Do the object's special activity (increase health, spin Ghostracer, etc.)
-////    virtual void doActivity(GhostRacer* gr) = 0;
-////
-////      // Return the object's increase to the score when activated.
-////    virtual int getScoreIncrease() const = 0;
-////
-////      // Return the sound to be played when the object is activated.
-////    virtual int getSound() const;
-////
-////      // Return whether the object dies after activation.
-////    virtual bool selfDestructs() const = 0;
-////
-////      // Return whether the object is affected by a holy water projectile.
-////    virtual bool isSprayable() const = 0;
-////};
-////
-////class OilSlick : public GhostRacerActivatedObject
-////{
-////public:
-////    OilSlick(StudentWorld* sw, double x, double y);
-////    virtual void doSomething();
-////    virtual void doActivity(GhostRacer* gr);
-////    virtual int getScoreIncrease() const;
-////    virtual int getSound() const;
-////    virtual bool selfDestructs() const;
-////    virtual bool isSprayable() const;
-////};
-////
-////class HealingGoodie : public GhostRacerActivatedObject
-////{
-////public:
-////    HealingGoodie(StudentWorld* sw, double x, double y);
-////    virtual void doSomething();
-////    virtual void doActivity(GhostRacer* gr);
-////    virtual int getScoreIncrease() const;
-////    virtual bool selfDestructs() const;
-////    virtual bool isSprayable() const;
-////};
-////
-////class HolyWaterGoodie : public GhostRacerActivatedObject
-////{
-////public:
-////    HolyWaterGoodie(StudentWorld* sw, double x, double y);
-////    virtual void doSomething();
-////    virtual void doActivity(GhostRacer* gr);
-////    virtual int getScoreIncrease() const;
-////    virtual bool selfDestructs() const;
-////    virtual bool isSprayable() const;
-////};
-////
-////class SoulGoodie : public GhostRacerActivatedObject
-////{
-////public:
-////    SoulGoodie(StudentWorld* sw, double x, double y);
-////    virtual void doSomething();
-////    virtual void doActivity(GhostRacer* gr);
-////    virtual int getScoreIncrease() const;
-////    virtual int getSound() const;
-////    virtual bool selfDestructs() const;
-////    virtual bool isSprayable() const;
-////};
-//
-//
