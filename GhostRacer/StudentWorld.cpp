@@ -120,7 +120,7 @@ int StudentWorld::move()
         //checks each lane
         for(int i = 0; i < 3; i++)
         {
-            Actor *top = nullptr;
+            Actor* top = nullptr;
             Actor* bottom = nullptr;
             closestCollisionActorTopAndBottomLane(laneOrder[i], top, bottom);
             
@@ -256,7 +256,7 @@ bool StudentWorld::sprayFirstAppropriateActor(Actor *a)
 }
 
 
-void StudentWorld::closestCollisionActorTopAndBottomLane(int lane, Actor* closestToTop, Actor* closestToBottom)
+void StudentWorld::closestCollisionActorTopAndBottomLane(int lane, Actor*& closestToTop, Actor*& closestToBottom)
 {
     int left_bound = LEFT_EDGE + lane * ROAD_WIDTH/3;
     int right_bound = left_bound + ROAD_WIDTH/3;
@@ -277,7 +277,7 @@ void StudentWorld::closestCollisionActorTopAndBottomLane(int lane, Actor* closes
     }
 }
 
-void StudentWorld::closestCollisionActorFrontBack(Actor* a, Actor* front, Actor* back)
+void StudentWorld::closestCollisionActorFrontBack(Actor* a, Actor*& front, Actor*& back)
 {
     for(int i = 0; i < 3; i++)
     {
@@ -288,7 +288,7 @@ void StudentWorld::closestCollisionActorFrontBack(Actor* a, Actor* front, Actor*
         {
             for(vector<Actor*>::iterator p = m_actors.begin(); p != m_actors.end(); p++)
             {
-                if((*p)->isCollisionAvoidanceWorthy())
+                if((*p)->isCollisionAvoidanceWorthy() && (*p)->getX() >= left_bound && (*p)->getX() < right_bound)
                 {
                     //if p is in front of a
                     if((*p)->getY() > a->getY())

@@ -16,7 +16,7 @@ public:
     Actor(StudentWorld* world, int imageID, double startX, double startY, int startDirection, double size, int depth, double VSpeed = 0, double HSpeed = 0);
     virtual void doSomething() = 0;
     virtual bool isAlive() const;
-    virtual bool isCollisionAvoidanceWorthy();
+    virtual bool isCollisionAvoidanceWorthy() const;
     StudentWorld* getWorld() const;
     double getVSpeed() const;
     void setVSpeed(double newVSpeed);
@@ -74,7 +74,6 @@ public:
     virtual void doSomething();
     virtual void die();
     virtual int soundWhenDie() const;
-    virtual bool isCollisionAvoidanceWorthy() const;
 private:
     int m_holyWaterSpray;
 };

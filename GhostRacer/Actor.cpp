@@ -14,7 +14,7 @@ bool Actor::isAlive() const
     return m_alive;
 }
 
-bool Actor::isCollisionAvoidanceWorthy()
+bool Actor::isCollisionAvoidanceWorthy() const
 {
     return false;
 }
@@ -223,11 +223,6 @@ void GhostRacer::die()
 int GhostRacer::soundWhenDie() const
 {
     return SOUND_PLAYER_DIE;
-}
-
-bool GhostRacer::isCollisionAvoidanceWorthy() const
-{
-    return true;
 }
 
 
@@ -457,7 +452,7 @@ void ZombieCab::doSomething()
     if(getVSpeed() > getWorld()->getGhostRacer()->getVSpeed())
     {
         //if the there's something in front that's not the racer and is within 96, decrease vpseed by .5
-        if(closestFrontCollision && closestFrontCollision != getWorld()->getGhostRacer() && closestFrontCollision->getY() - getY() < 96)
+        if(closestFrontCollision && closestFrontCollision->getY() - getY() < 96)
         {
             setVSpeed(getVSpeed()-.5);
             return;
