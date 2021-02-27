@@ -35,6 +35,7 @@ private:
     double m_lastBorderY;
     int m_savedSouls;
     int m_score;
+    int m_bonus;
 };
 
 #endif // STUDENTWORLD_H_

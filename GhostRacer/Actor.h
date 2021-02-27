@@ -85,7 +85,7 @@ private:
 class BorderLine : public Actor
 {
 public:
-    BorderLine(StudentWorld* world, int imageID, double startX, double startY, int startDirection = 0, double size = 2.0, int depth = 2, double VSpeed = -4, double HSpeed = 0);
+    BorderLine(StudentWorld* world, int imageID, double startX, double startY);
     virtual void doSomething();
 };
 

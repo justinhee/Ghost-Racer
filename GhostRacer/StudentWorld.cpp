@@ -6,6 +6,7 @@
 #include <iostream>
 #include <cmath>
 #include <string>
+#include <sstream>
 using namespace std;
 
 const int LEFT_EDGE = ROAD_CENTER - ROAD_WIDTH/2;
@@ -20,7 +21,7 @@ GameWorld* createStudentWorld(string assetPath)
 // Students:  Add code to this file, StudentWorld.h, Actor.h, and Actor.cpp
 
 StudentWorld::StudentWorld(string assetPath)
-: GameWorld(assetPath), m_GhostRacer(nullptr), m_lastBorderY(0), m_savedSouls(0), m_score(0)
+: GameWorld(assetPath), m_GhostRacer(nullptr), m_lastBorderY(0), m_savedSouls(0), m_score(0), m_bonus(5000)
 {}
 
 StudentWorld::~StudentWorld()
@@ -66,7 +67,8 @@ int StudentWorld::move()
         //if ghost racer completed the level, add bonues points and return finish
         if(m_savedSouls >= getLevel()*2+5)
         {
-            //TODO: award bonus points
+            addtoScore(m_bonus);
+            playSound(SOUND_FINISHED_LEVEL);
             return GWSTATUS_FINISHED_LEVEL;
         }
     }
@@ -189,14 +191,26 @@ int StudentWorld::move()
     //TODO: check interval for randInt
     if(randInt(0, 99) == 0)
     {
-        m_actors.push_back(new SoulGoodie(this, randInt(0, VIEW_WIDTH), VIEW_HEIGHT));
+        m_actors.push_back(new SoulGoodie(this, randInt(LEFT_EDGE, RIGHT_EDGE), VIEW_HEIGHT));
     }
         
     
     
     //TODO: update text!!!
+    ostringstream oss;
+    oss << "Score: " << getScore();
+    oss << "  Lvl: " << getLevel();
+    oss << "  Souls2Save: " << getLevel()*2 + 5 - m_savedSouls;
+    oss << "  Lives: " << getLives();
+    oss << "  Health: " << getGhostRacer()->getHealth();
+    oss << "  Sprays: " << getGhostRacer()->getNumSprays();
+    oss << "  Bonus: " << m_bonus;
     
+    string gameStats = oss.str();
+    setGameStatText(gameStats);
+    m_bonus--;
     
+    //Score: 2100 Lvl: 1 Souls2Save: 5 Lives: 3 Health: 95 Sprays: 22 Bonus: 4321
     
     
     return GWSTATUS_CONTINUE_GAME;

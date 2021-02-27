@@ -253,8 +253,8 @@ void GhostRacer::spin()
 
 
 //BORDERLINE IMPLEMENTATION
-BorderLine::BorderLine(StudentWorld* world, int imageID, double startX, double startY, int startDirection, double size, int depth, double VSpeed, double HSpeed) :
-Actor(world, imageID, startX, startY, startDirection, size, depth, VSpeed, HSpeed)
+BorderLine::BorderLine(StudentWorld* world, int imageID, double startX, double startY) :
+Actor(world, imageID, startX, startY, 0, 2.0, 2, -4, 0)
 {}
 
 void BorderLine::doSomething()
