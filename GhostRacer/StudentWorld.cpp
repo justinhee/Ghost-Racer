@@ -64,6 +64,11 @@ int StudentWorld::move()
         if(!getGhostRacer()->isAlive())
             return GWSTATUS_PLAYER_DIED;
         //if ghost racer completed the level, add bonues points and return finish
+        if(m_savedSouls >= getLevel()*2+5)
+        {
+            //TODO: award bonus points
+            return GWSTATUS_FINISHED_LEVEL;
+        }
     }
     
     //UPDATE POSITION OF LAST WHITE BORDER LINE
@@ -80,7 +85,6 @@ int StudentWorld::move()
         }
         else
             p++;
-
     }
     
     //ADD NEW BORDER LINES
@@ -97,6 +101,69 @@ int StudentWorld::move()
         m_actors.push_back(new BorderLine(this, IID_WHITE_BORDER_LINE, RIGHT_EDGE - ROAD_WIDTH/3, new_border_y));
         m_lastBorderY = new_border_y;
     }
+    
+    //ADD ZOMBIE CABS
+    int ChanceVehicle = max(100 - getLevel()*10, 20);
+    if(randInt(0, ChanceVehicle-1) == 0)
+    {
+        //randomizes order of checking lanes
+        int laneOrder[] = {0,1,2};
+        for(int i = 0; i < 3; i++)
+        {
+            int r = randInt(i, 2);
+            int temp = laneOrder[i];
+            laneOrder[i] = laneOrder[r];
+            laneOrder[r] = temp;
+        }
+        
+        
+        //checks each lane
+        for(int i = 0; i < 3; i++)
+        {
+            Actor *top = nullptr;
+            Actor* bottom = nullptr;
+            closestCollisionActorTopAndBottomLane(laneOrder[i], top, bottom);
+            
+            int center = ROAD_CENTER + (laneOrder[i]-1)*ROAD_WIDTH/3;
+            
+            
+            
+            
+            if(bottom == nullptr || bottom->getY() > VIEW_HEIGHT/3)
+            {
+                int vert_speed = getGhostRacer()->getVSpeed()+randInt(2, 4);
+                Actor* newCab =new ZombieCab(this, center, SPRITE_HEIGHT/2);
+                newCab->setVSpeed(vert_speed);
+                m_actors.push_back(newCab);
+                break;
+            }
+            else if(top == nullptr || top->getY() < VIEW_HEIGHT * 2 / 3)
+            {
+                int vert_speed = getGhostRacer()->getVSpeed()-randInt(2, 4);
+                Actor* newCab =new ZombieCab(this, center, VIEW_HEIGHT - SPRITE_HEIGHT/2);
+                newCab->setVSpeed(vert_speed);
+                m_actors.push_back(newCab);
+                break;
+            }
+        }
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+    }
+    
+    
+    
+    
+    
+    
     
     //ADD NEW ZOMBIE PEDESTRIANS
     int chanceZombiePed = max(100-getLevel()*10, 20);
@@ -122,6 +189,12 @@ int StudentWorld::move()
         m_actors.push_back(new SoulGoodie(this, randInt(0, VIEW_WIDTH), VIEW_HEIGHT));
     }
         
+    
+    
+    //TODO: update text!!!
+    
+    
+    
     
     return GWSTATUS_CONTINUE_GAME;
 }
@@ -168,3 +241,86 @@ void StudentWorld::addActor(Actor* actor)
 {
     m_actors.push_back(actor);
 }
+
+bool StudentWorld::sprayFirstAppropriateActor(Actor *a)
+{
+    for(vector<Actor*>::iterator p = m_actors.begin(); p != m_actors.end(); p++)
+    {
+        if(overlap(a, *p))
+        {
+            return (*p)->beSprayedIfAppropriate();
+            
+        }
+    }
+    return false;
+}
+
+
+void StudentWorld::closestCollisionActorTopAndBottomLane(int lane, Actor* closestToTop, Actor* closestToBottom)
+{
+    int left_bound = LEFT_EDGE + lane * ROAD_WIDTH/3;
+    int right_bound = left_bound + ROAD_WIDTH/3;
+    for(vector<Actor*>::iterator p = m_actors.begin(); p != m_actors.end(); p++)
+    {
+        if((*p)->isCollisionAvoidanceWorthy())
+        {
+            int x = (*p)->getX();
+            int y = (*p)->getY();
+            if(x >= left_bound && x < right_bound)
+            {
+                if(!closestToBottom || y < closestToBottom->getY())
+                    closestToBottom = *p;
+                if(!closestToTop || y > closestToTop->getY())
+                    closestToTop = *p;
+            }
+        }
+    }
+}
+
+void StudentWorld::closestCollisionActorFrontBack(Actor* a, Actor* front, Actor* back)
+{
+    for(int i = 0; i < 3; i++)
+    {
+        int left_bound = LEFT_EDGE + i * ROAD_WIDTH/3;
+        int right_bound = left_bound + ROAD_WIDTH/3;
+        //if a is in the current lane
+        if(a->getX() >= left_bound && a->getX() < right_bound)
+        {
+            for(vector<Actor*>::iterator p = m_actors.begin(); p != m_actors.end(); p++)
+            {
+                if((*p)->isCollisionAvoidanceWorthy())
+                {
+                    //if p is in front of a
+                    if((*p)->getY() > a->getY())
+                    {
+                        if(!front)
+                            front = *p;
+                        else
+                        {
+                            int minFrontGap = front->getY() - a->getY();
+                            int frontGap = (*p)->getY() - a->getY();
+                            if(frontGap < minFrontGap)
+                                front = *p;
+                        }
+                    }
+                    //if p is behind a
+                    else if((*p)->getY() < a->getY())
+                    {
+                        if(!back)
+                            back = *p;
+                        else
+                        {
+                            int minBackGap = a->getY() - back->getY();
+                            int backGap = a->getY() - (*p)->getY();
+                            if(backGap < minBackGap)
+                                back = *p;
+                        }
+                    }
+                }
+            }
+            break;
+        }
+    }
+}
+
+

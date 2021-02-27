@@ -24,6 +24,7 @@ public:
     void setHSpeed(double newHSpeed);
     virtual void die();
     virtual bool move();
+    virtual bool beSprayedIfAppropriate();
     
 private:
     StudentWorld* m_world;
@@ -50,10 +51,10 @@ public:
     virtual bool damage(int damage);
 
       // What sound should play when this agent is damaged but does not die?
-    virtual int soundWhenHurt() const = 0;
+    virtual int soundWhenHurt() const;
 
       // What sound should play when this agent is damaged and dies?
-    virtual int soundWhenDie() const = 0;
+    virtual int soundWhenDie() const;
 private:
     int m_health;
 };
@@ -72,8 +73,8 @@ public:
     GhostRacer(StudentWorld* world);
     virtual void doSomething();
     virtual void die();
-    virtual int soundWhenHurt() const;
     virtual int soundWhenDie() const;
+    virtual bool isCollisionAvoidanceWorthy() const;
 private:
     int m_holyWaterSpray;
 };
@@ -90,7 +91,7 @@ public:
 class Pedestrian : public Agent
 {
 public:
-    Pedestrian(StudentWorld* world, int imageID, double startX, double startY, double size, double VSpeed = -4, double HSpeed = 0, int health = 2, int movementPlanDistance = 0);
+    Pedestrian(StudentWorld* world, int imageID, double startX, double startY, double size);
     void moveAndPossiblyPickPlan();
     virtual int soundWhenHurt() const;
     virtual int soundWhenDie() const;
@@ -102,8 +103,9 @@ private:
 class ZombiePed : public Pedestrian
 {
 public:
-    ZombiePed(StudentWorld* world, double startX, double startY, double size = 3.0, int timeToGrunt = 0);
+    ZombiePed(StudentWorld* world, double startX, double startY);
     virtual void doSomething();
+    virtual bool beSprayedIfAppropriate();
 private:
     int m_timeToGrunt;
 };
@@ -112,9 +114,27 @@ private:
 class HumanPed : public Pedestrian
 {
 public:
-    HumanPed(StudentWorld* world, double startX, double startY, int imageID = IID_HUMAN_PED, int startDirection = 0, double size = 2.0);
+    HumanPed(StudentWorld* world, double startX, double startY);
     virtual void doSomething();
+    virtual bool beSprayedIfAppropriate();
 };
+
+//ZOMBIECAB CLASS
+class ZombieCab : public Agent
+{
+public:
+    ZombieCab(StudentWorld* world, double startX, double startY);
+    virtual void doSomething();
+    virtual bool beSprayedIfAppropriate();
+    virtual int soundWhenHurt() const;
+    virtual int soundWhenDie() const;
+private:
+    bool m_hasDamagedGhostRacer;
+    int m_movementPlanDistance;
+};
+
+
+
 
 //SOULGOODIE CLASS
 class SoulGoodie : public Actor
@@ -133,11 +153,12 @@ public:
     
 };
 
-//HOLYWATERPROJECTILE CLASS
-class HolyWaterProjectile : public Actor
+//SPRAY CLASS
+class Spray : public Actor
 {
 public:
-    HolyWaterProjectile(StudentWorld* world, double startX, double startY, int startDirection, int imageID = IID_HOLY_WATER_PROJECTILE, double size = 1.0, int depth = 1, int distanceToGo = 160);
+    Spray(StudentWorld* world, double startX, double startY, int startDirection);
+    virtual void doSomething();
 private:
     int m_distanceToGo;
     
@@ -388,3 +409,60 @@ private:
 //};
 //
 //#endif // ACTOR_INCLUDED
+
+/*If the zombie cab is not currently alive, its doSomething() method must return
+ immediately – none of the following steps should be performed.
+ 2. If the zombie cab overlaps with the Ghost Racer:
+ a. If the zombie cab has already damaged Ghost Racer, it must immediately
+ skip to step 3.
+ b. Otherwise…
+ c. Play a sound of SOUND_VEHICLE_CRASH.
+ d. The zombie cab must do 20 points of damage to the Ghost Racer (see
+ Ghost Racer’s section on what it does when it’s damaged).
+ 39
+ e. If the zombie cab is to the left of the Ghost Racer or has the same X
+ coordinate as Ghost Racer then the zombie cab must:
+ i. Set its horizontal speed to -5.
+ ii. Set its direction equal to: 120 degrees plus a random integer
+ between [0,20).
+ f. If the zombie cab is right of the Ghost Racer then it must:
+ i. Set its horizontal speed to 5.
+ ii. Set its direction equal to: 60 degrees minus a random integer
+ between [0,20).
+ g. The zombie cab must remember that it has now damaged Ghost Racer (so
+ it doesn’t repeat the above steps for this zombie cab during subsequent
+ ticks, even if the cab still overlaps with the Ghost Racer).
+ 3. The zombie cab must then move, using the following algorithm:
+ a. Let vert_speed = the zombie cab’s current vertical speed - Ghost Racer’s
+ current vertical speed
+ b. Let horiz_speed = the zombie cab’s horizontal speed
+ c. Let new_y = zombie cab’s current y + vert_speed
+ d. Let new_x = zombie cab’s current x + horiz_speed
+ e. Adjust the zombie cab’s location to new_x, new_y using the
+ GraphObject::moveTo() method.
+ f. If the zombie cab has gone off of the screen (either its X or Y coordinate is
+ less than zero, or its X coordinate is > VIEW_WIDTH, or its Y coordinate
+ > VIEW_HEIGHT), it must set its status to not-alive, so it will be
+ removed by StudentWorld later in this tick. It must then immediately
+ return.
+ 4. If the zombie cab’s vertical speed is greater than Ghost Racer’s vertical speed (so
+ the cab is moving up the screen) and there is a "collision-avoidance worthy" actor
+ in the zombie cab's lane that is in front of that zombie cab:
+ a. If the closest such actor is less than 96 vertical pixels in front of the
+ zombie cab, decrease the zombie cab's vertical speed by .5 and
+ immediately return.
+ 5. If the zombie cab's vertical speed is the same as or slower than Ghost Racer's
+ vertical speed (so the cab is moving down the screen or holding steady with Ghost
+ Racer) and there is a "collision-avoidance worthy" actor in the zombie cab's lane
+ that is behind that zombie cab:
+ a. If the closest such actor is less than 96 vertical pixels behind the zombie
+ cab and is not Ghost Racer, increase the zombie cab's vertical speed by .5
+ and immediately return.
+ 6. Decrement the zombie cab’s movement plan distance by one.
+ 7. If the zombie cab’s movement plan distance is greater than zero, then
+ immediately return.
+ 8. Otherwise, it’s time to pick a new movement plan for the zombie cab:
+ a. Set the zombie cab’s movement plan distance to a random integer between
+ 4 and 32, inclusive.
+ b. Set the zombie cab’s vertical speed to its vertical speed + a random integer
+ between -2 and 2, inclusive.*/

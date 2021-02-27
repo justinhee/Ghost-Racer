@@ -25,6 +25,9 @@ public:
     void saveSoul();
     void addtoScore(int score);
     void addActor(Actor* actor);
+    bool sprayFirstAppropriateActor(Actor* a);
+    void closestCollisionActorTopAndBottomLane(int lane, Actor* closestToTop, Actor* closestToBottom);
+    void closestCollisionActorFrontBack(Actor* a, Actor* front, Actor* back);
     
 private:
     std::vector<Actor*> m_actors;

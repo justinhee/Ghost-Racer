@@ -1,6 +1,8 @@
 #include "Actor.h"
 #include "StudentWorld.h"
 
+const double PI = 4 * atan(1.0);
+
 // Students:  Add code to this file, Actor.h, StudentWorld.h, and StudentWorld.cpp
 //goodies, projetile
 //ACTOR IMPLEMENTATION
@@ -64,6 +66,11 @@ bool Actor::move()
 
 }
 
+bool Actor::beSprayedIfAppropriate()
+{
+    return false;
+}
+
 //AGENT IMPLEMENTATION
 Agent::Agent(StudentWorld* world, int imageID, double startX, double startY, int startDirection, double size, int hp, double VSpeed, double HSpeed) : Actor(world, imageID, startX, startY, startDirection, size, 0, VSpeed, HSpeed), m_health(hp)
 {}
@@ -89,7 +96,7 @@ void Agent::heal(int health)
 bool Agent::damage(int damage)
 {
     m_health -= damage;
-    if(m_health < 0)
+    if(m_health <= 0)
     {
         getWorld()->playSound(soundWhenDie());
         die();
@@ -100,7 +107,41 @@ bool Agent::damage(int damage)
     return false;
 }
 
+int Agent::soundWhenDie() const
+{
+    return SOUND_NONE;
+}
+int Agent::soundWhenHurt() const
+{
+    return SOUND_NONE;
+}
 
+//SPRAY IMPLEMENTATION
+Spray::Spray(StudentWorld* world, double startX, double startY, int startDirection) :
+Actor(world, IID_HOLY_WATER_PROJECTILE, startX, startY, startDirection, 1.0, 1),
+m_distanceToGo(160)
+{}
+
+void Spray::doSomething()
+{
+    if(!isAlive())
+        return;
+    if(getWorld()->sprayFirstAppropriateActor(this))
+    {
+        die();
+        return;
+    }
+    moveForward(SPRITE_HEIGHT);
+    m_distanceToGo-=SPRITE_HEIGHT;
+    
+    if(getX() < 0 || getY() < 0 || getX() > VIEW_WIDTH || getY() > VIEW_HEIGHT || m_distanceToGo <= 0)
+    {
+        die();
+        return;
+    }
+    
+    
+}
 
 //GHOSTRACER IMPLEMENTATION
 GhostRacer::GhostRacer(StudentWorld* world) :
@@ -130,9 +171,12 @@ void GhostRacer::doSomething()
             switch(ch)
             {
                 case KEY_PRESS_SPACE:
+                    //TODO:
                     if(m_holyWaterSpray>0)
                     {
-                        //TODO: add holyWater object
+                        int x = getX() + SPRITE_HEIGHT*cos(PI*getDirection()/180);
+                        int y = getY() + SPRITE_HEIGHT*sin(PI*getDirection()/180);
+                        getWorld()->addActor(new Spray(getWorld(), x, y, getDirection()));
                         m_holyWaterSpray--;
                         getWorld()->playSound(SOUND_PLAYER_SPRAY);
                     }
@@ -160,7 +204,7 @@ void GhostRacer::doSomething()
     }
     double max_shift_per_tick = 4.0;
     int direction = getDirection();
-    const double PI = 4 * atan(1.0);
+    
     
     double delta_x = cos(direction*PI/180)*max_shift_per_tick;
     double cur_x = getX();
@@ -176,14 +220,14 @@ void GhostRacer::die()
     getWorld()->decLives();
 }
 
-int GhostRacer::soundWhenHurt() const
-{
-    return SOUND_VEHICLE_CRASH;
-}
-
 int GhostRacer::soundWhenDie() const
 {
     return SOUND_PLAYER_DIE;
+}
+
+bool GhostRacer::isCollisionAvoidanceWorthy() const
+{
+    return true;
 }
 
 
@@ -198,9 +242,10 @@ void BorderLine::doSomething()
 }
 
 //PEDESTRIAN IMPLEMENTATION
-Pedestrian::Pedestrian(StudentWorld* world, int imageID, double startX, double startY, double size, double VSpeed, double HSpeed, int health, int movementPlanDistance) :
+Pedestrian::Pedestrian(StudentWorld* world, int imageID, double startX, double startY, double size) :
 Agent(world, imageID, startX, startY, 0, size, 2, -4, 0),
-m_movementPlanDistance(movementPlanDistance)
+
+m_movementPlanDistance(0)
 {}
 
 void Pedestrian::moveAndPossiblyPickPlan()
@@ -239,9 +284,9 @@ int Pedestrian::soundWhenDie() const
 
 
 //ZOMBIEPEDESTRIAN IMPLEMENTATION
-ZombiePed::ZombiePed(StudentWorld* world, double startX, double startY, double size, int timeToGrunt) :
-Pedestrian(world, IID_ZOMBIE_PED, startX, startY, 0, size),
-m_timeToGrunt(timeToGrunt)
+ZombiePed::ZombiePed(StudentWorld* world, double startX, double startY) :
+Pedestrian(world, IID_ZOMBIE_PED, startX, startY, 3.0),
+m_timeToGrunt(0)
 {}
 
 void ZombiePed::doSomething()
@@ -250,7 +295,10 @@ void ZombiePed::doSomething()
         return;
     if(getWorld()->overlap(this, getWorld()->getGhostRacer()))
     {
-        damage(2);
+        if(damage(2))
+        {
+            getWorld()->addtoScore(150);
+        }
         getWorld()->getGhostRacer()->damage(5);
         return;
     }
@@ -285,6 +333,35 @@ void ZombiePed::doSomething()
     
 }
 
+bool ZombiePed::beSprayedIfAppropriate()
+{
+    if(damage(1) && !getWorld()->overlap(this, getWorld()->getGhostRacer()))
+    {
+        getWorld()->addtoScore(150);
+        if(randInt(1, 5)==1)
+        {
+            getWorld()->addActor(new HealingGoodie(getWorld(), getX(), getY()));
+            
+        }
+    }
+        
+    return true;
+        
+    /*When damaged (e.g., by holy water sprays), a zombie pedestrian must do the
+     following:
+     o It must reduce its hit points by the specified amount of damage hit points.
+     o If its hit points reach zero or below, the zombie pedestrian must:
+     ▪ Set its status to not-alive, so it will be removed by StudentWorld
+     later in this tick.
+     ▪ Play a sound of SOUND_PED_DIE.
+     ▪ If the zombie ped does not currently overlap with Ghost Racer
+     (i.e., it didn’t die due to Ghost Racer colliding with it), then there
+     is a 1 in 5 chance that the zombie ped will add a new healing
+     goodie at its current position.
+     ▪ Ensure the player receives 150 points.
+     o Otherwise (the zombie ped still has hit points left), play a sound of
+     SOUND_PED_HURT*/
+}
 //bool ZombiePed::damage(int damage)
 //{
 //
@@ -300,8 +377,8 @@ void ZombiePed::doSomething()
 //}
 
 //HUMANPEDESTRIAN IMPLEMENTATION
-HumanPed::HumanPed(StudentWorld* world, double startX, double startY, int imageID, int startDirection, double size) :
-Pedestrian(world, imageID, startX, startY, startDirection, size)
+HumanPed::HumanPed(StudentWorld* world, double startX, double startY) :
+Pedestrian(world, IID_HUMAN_PED, startX, startY, 2.0)
 {}
 
 void HumanPed::doSomething()
@@ -318,13 +395,125 @@ void HumanPed::doSomething()
     moveAndPossiblyPickPlan();
 }
 
+bool HumanPed::beSprayedIfAppropriate()
+{
+    if(getDirection()==180)
+        setDirection(0);
+    else
+        setDirection(180);
+    setHSpeed(-1*getHSpeed());
+    getWorld()->playSound(SOUND_PED_HURT);
+    return true;
+    
+    /*● A human pedestrian is affected by holy water. When damaged by holy water the
+     human pedestrian will reverse its direction:
+     o Ignore all hit point damage (holy water doesn’t actually injure the
+     pedestrian)
+     o Change its current horizontal speed by multiplying it by -1 (e.g., if the ped
+     was going left at 2 pixels/tick, it must change its direction to right at 2
+     pixels/tick).
+     o Change the direction the human is facing (e.g., from 0 to 180 degrees, or
+     180 degrees to 0) as appropriate.
+     o The human pedestrian must play a sound of SOUND_PED_HURT.*/
+}
+
+ZombieCab::ZombieCab(StudentWorld* world, double startX, double startY) :
+Agent(world, IID_ZOMBIE_CAB, startX, startY, 90, 4.0, 3, 0, 0), m_hasDamagedGhostRacer(false), m_movementPlanDistance(0)
+{}
+void ZombieCab::doSomething()
+{
+    if(!isAlive())
+        return;
+    if(getWorld()->overlap(this, getWorld()->getGhostRacer()) && !m_hasDamagedGhostRacer)
+    {
+        getWorld()->playSound(SOUND_VEHICLE_CRASH);
+        getWorld()->getGhostRacer()->damage(20);
+        //if left of racer
+        if(getX() <= getWorld()->getGhostRacer()->getX())
+        {
+            setHSpeed(-5);
+            setDirection(120+randInt(0, 20));
+        }
+        else if(getX() > getWorld()->getGhostRacer()->getX())
+        {
+            setHSpeed(5);
+            setDirection(60-randInt(0, 20));
+        }
+        m_hasDamagedGhostRacer = true;
+    }
+
+    //MOVE
+    if(!move())
+        return;
+    
+    
+    //TODO:add thingy
+    
+    Actor* closestFrontCollision = nullptr;
+    Actor* closestBackCollision = nullptr;
+    getWorld()->closestCollisionActorFrontBack(this, closestFrontCollision, closestBackCollision);
+    
+    //if faster than racer
+    if(getVSpeed() > getWorld()->getGhostRacer()->getVSpeed())
+    {
+        //if the there's something in front that's not the racer and is within 96, decrease vpseed by .5
+        if(closestFrontCollision && closestFrontCollision != getWorld()->getGhostRacer() && closestFrontCollision->getY() - getY() < 96)
+        {
+            setVSpeed(getVSpeed()-.5);
+            return;
+        }
+    }
+    //if same or slower than racer
+    else
+    {
+        //if there's something in back that's not the racer and is within 96, inrease vspeed by .5
+        if(closestBackCollision && closestBackCollision != getWorld()->getGhostRacer() && getY() - closestBackCollision->getY() < 96)
+        {
+            setVSpeed(getVSpeed()+.5);
+            return;
+        }
+    }
+    
+    //6. decrement movement plan distance
+    m_movementPlanDistance--;
+    
+    //7. if movement plan distance is greater than 0, return
+    if(m_movementPlanDistance > 0)
+        return;
+    //8. choose new movement plan for cab
+    else
+    {
+        m_movementPlanDistance = randInt(4, 32);
+        setVSpeed(getVSpeed() + randInt(-2, 2));
+    }
+}
+bool ZombieCab::beSprayedIfAppropriate()
+{//TODO: finish with oil slick
+    if(damage(1))
+    {
+        getWorld()->addtoScore(200);
+//        if(randInt(1, 5)==1)
+            //getWorld()->addActor(<#Actor *actor#>)
+    }
+    return true;
+}
+int ZombieCab::soundWhenHurt() const
+{
+    return SOUND_VEHICLE_HURT;
+}
+int ZombieCab::soundWhenDie() const
+{
+    return SOUND_VEHICLE_DIE;
+}
+
 //SOULGOODIE IMPLEMENTATION
 SoulGoodie::SoulGoodie(StudentWorld* world, double startX, double startY, int imageID, int startDirection, double size, int depth, double VSpeed, double HSpeed) :
-Actor(world, imageID, startX, startY, startDirection, size, depth, VSpeed, HSpeed)
+Actor(world, IID_SOUL_GOODIE, startX, startY, startDirection, 4, 2, VSpeed, HSpeed)
 {}
 
 void SoulGoodie::doSomething()
 {
+    //TODO: add if statement?
     move();
     if(getWorld()->overlap(this, getWorld()->getGhostRacer()))
     {
@@ -343,6 +532,7 @@ Actor(world, IID_HEAL_GOODIE, startX, startY, startDirection, size, depth, VSpee
 {}
 void HealingGoodie::doSomething()
 {
+    //TODO: add if statement
     move();
     if(getWorld()->overlap(this, getWorld()->getGhostRacer()))
     {
@@ -353,11 +543,7 @@ void HealingGoodie::doSomething()
     }
 }
 
-//HOLYWATERPROJECTILE IMPLEMENTATION
-HolyWaterProjectile::HolyWaterProjectile(StudentWorld* world, double startX, double startY, int startDirection, int imageID, double size, int depth, int distanceToGo) :
-Actor(world, imageID, startX, startY, startDirection, size, depth),
-m_distanceToGo(distanceToGo)
-{}
+
 
 
 
