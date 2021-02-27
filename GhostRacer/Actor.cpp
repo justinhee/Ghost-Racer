@@ -153,15 +153,17 @@ void GhostRacer::doSomething()
 {
     if(!isAlive())
         return;
-    if(getX() <= ROAD_CENTER - ROAD_WIDTH/2)
+    if(getX() <= ROAD_CENTER - ROAD_WIDTH/2 && getDirection() > 90)
     {
         damage(10);
         setDirection(82);
+        getWorld()->playSound(SOUND_VEHICLE_CRASH);
     }
-    else if(getX() >= ROAD_CENTER + ROAD_WIDTH/2)
+    else if(getX() >= ROAD_CENTER + ROAD_WIDTH/2 && getDirection() < 90)
     {
         damage(10);
         setDirection(98);
+        getWorld()->playSound(SOUND_VEHICLE_CRASH);
     }
     else
     {
@@ -223,6 +225,30 @@ void GhostRacer::die()
 int GhostRacer::soundWhenDie() const
 {
     return SOUND_PLAYER_DIE;
+}
+
+int GhostRacer::getNumSprays() const
+{
+    return m_holyWaterSpray;
+}
+
+void GhostRacer::increaseSprays(int amt)
+{
+    m_holyWaterSpray += amt;
+}
+
+void GhostRacer::spin()
+{
+    int dTheta = randInt(5, 20);
+    if(randInt(0, 1))
+        dTheta = dTheta*-1;
+    int newDirection = getDirection() + dTheta;
+    if(newDirection < 60)
+        newDirection = 60;
+    else if(newDirection > 120)
+        newDirection = 120;
+    setDirection(newDirection);
+    
 }
 
 
@@ -442,7 +468,6 @@ void ZombieCab::doSomething()
         return;
     
     
-    //TODO:add thingy
     
     Actor* closestFrontCollision = nullptr;
     Actor* closestBackCollision = nullptr;
@@ -487,8 +512,8 @@ bool ZombieCab::beSprayedIfAppropriate()
     if(damage(1))
     {
         getWorld()->addtoScore(200);
-//        if(randInt(1, 5)==1)
-            //getWorld()->addActor(<#Actor *actor#>)
+        if(randInt(1, 5)==1)
+            getWorld()->addActor(new OilSlick(getWorld(), getX(), getY()));
     }
     return true;
 }
@@ -531,6 +556,11 @@ void GhostRacerActivatedObject::doSomething()
 
 bool GhostRacerActivatedObject::beSprayedIfAppropriate()
 {
+    if(isSprayable())
+    {
+        die();
+        return true;
+    }
     return false;
     
 }
@@ -608,8 +638,68 @@ bool HealingGoodie::isSprayable() const
     return true;
 }
 
+//HOLYWATERGOODIE IMPLEMENTATION
+
+HolyWaterGoodie::HolyWaterGoodie(StudentWorld* world, double startX, double startY) :
+GhostRacerActivatedObject(world, IID_HOLY_WATER_GOODIE, startX, startY, 2, 90)
+{}
+void HolyWaterGoodie::doSomething()
+{
+    GhostRacerActivatedObject::doSomething();
+}
+
+void HolyWaterGoodie::doActivity(GhostRacer* gr)
+{
+    gr->increaseSprays(10);
+}
+
+int HolyWaterGoodie::getScoreIncrease() const
+{
+    return 50;
+}
+bool HolyWaterGoodie::selfDestructs() const
+{
+    return true;
+}
+bool HolyWaterGoodie::isSprayable() const
+{
+    return true;
+}
 
 
+//OILSLICK IMPLEMENTATION
+
+OilSlick::OilSlick(StudentWorld* world, double startX, double startY) :
+GhostRacerActivatedObject(world, IID_OIL_SLICK, startX, startY, randInt(2, 5), 0)
+{}
+
+void OilSlick::doSomething()
+{
+    GhostRacerActivatedObject::doSomething();
+}
+void OilSlick::doActivity(GhostRacer* gr)
+{
+    gr->spin();
+}
+int OilSlick::getScoreIncrease() const
+{
+    return 0;
+}
+
+int OilSlick::getSound() const
+{
+    return SOUND_OIL_SLICK;
+}
+
+bool OilSlick::selfDestructs() const
+{
+    return false;
+}
+
+bool OilSlick::isSprayable() const
+{
+    return false;
+}
 
 
 

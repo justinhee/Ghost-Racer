@@ -146,20 +146,13 @@ int StudentWorld::move()
                 break;
             }
         }
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
     }
     
-    
+    //ADD NEW OIL SLICKS
+    int chanceOilSlick = max(150-getLevel()*10, 40);
+    if(randInt(0, chanceOilSlick-1)==0)
+        m_actors.push_back(new OilSlick(this, randInt(LEFT_EDGE, RIGHT_EDGE), VIEW_HEIGHT));
+        
     
     
     
@@ -181,6 +174,16 @@ int StudentWorld::move()
     {
         m_actors.push_back(new HumanPed(this, randInt(0, VIEW_WIDTH), VIEW_HEIGHT));
     }
+    
+    //ADD NEW HOLY WATER REFILL GOODIES
+    int chanceHolyWater = 100 + 10*getLevel();
+    if(randInt(0, chanceHolyWater-1)==0)
+    {
+        m_actors.push_back(new HolyWaterGoodie(this, randInt(LEFT_EDGE, RIGHT_EDGE), VIEW_HEIGHT));
+    }
+    
+    
+    
     
     //ADD NEW LOST SOUL GOODIES
     //TODO: check interval for randInt
