@@ -1,17 +1,13 @@
 #include "StudentWorld.h"
 #include "GameConstants.h"
 
-//#include "Actor.h"
+#include "Actor.h"
 
 #include <iostream>
 #include <cmath>
 #include <string>
 #include <sstream>
 using namespace std;
-
-const int LEFT_EDGE = ROAD_CENTER - ROAD_WIDTH/2;
-const int RIGHT_EDGE = ROAD_CENTER + ROAD_WIDTH/2;
-
 
 GameWorld* createStudentWorld(string assetPath)
 {
@@ -67,7 +63,7 @@ int StudentWorld::move()
         //if ghost racer completed the level, add bonues points and return finish
         if(m_savedSouls >= getLevel()*2+5)
         {
-            addtoScore(m_bonus);
+            increaseScore(m_bonus);
             playSound(SOUND_FINISHED_LEVEL);
             return GWSTATUS_FINISHED_LEVEL;
         }
@@ -249,11 +245,6 @@ void StudentWorld::saveSoul()
     m_savedSouls++;
 }
 
-void StudentWorld::addtoScore(int score)
-{
-    m_score += score;
-}
-
 void StudentWorld::addActor(Actor* actor)
 {
     m_actors.push_back(actor);
@@ -263,9 +254,10 @@ bool StudentWorld::sprayFirstAppropriateActor(Actor *a)
 {
     for(vector<Actor*>::iterator p = m_actors.begin(); p != m_actors.end(); p++)
     {
-        if(overlap(a, *p))
+        if(a != *p && overlap(a, *p))
         {
-            return (*p)->beSprayedIfAppropriate();
+            if((*p)->beSprayedIfAppropriate())
+                return true;
             
         }
     }

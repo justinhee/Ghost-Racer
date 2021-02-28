@@ -1,7 +1,7 @@
 #include "Actor.h"
 #include "StudentWorld.h"
 
-const double PI = 4 * atan(1.0);
+
 
 // Students:  Add code to this file, Actor.h, StudentWorld.h, and StudentWorld.cpp
 //goodies, projetile
@@ -153,13 +153,13 @@ void GhostRacer::doSomething()
 {
     if(!isAlive())
         return;
-    if(getX() <= ROAD_CENTER - ROAD_WIDTH/2 && getDirection() > 90)
+    if(getX() <= LEFT_EDGE && getDirection() > 90)
     {
         damage(10);
         setDirection(82);
         getWorld()->playSound(SOUND_VEHICLE_CRASH);
     }
-    else if(getX() >= ROAD_CENTER + ROAD_WIDTH/2 && getDirection() < 90)
+    else if(getX() >= RIGHT_EDGE && getDirection() < 90)
     {
         damage(10);
         setDirection(98);
@@ -265,7 +265,6 @@ void BorderLine::doSomething()
 //PEDESTRIAN IMPLEMENTATION
 Pedestrian::Pedestrian(StudentWorld* world, int imageID, double startX, double startY, double size) :
 Agent(world, imageID, startX, startY, 0, size, 2, -4, 0),
-
 m_movementPlanDistance(0)
 {}
 
@@ -318,26 +317,29 @@ void ZombiePed::doSomething()
     {
         if(damage(2))
         {
-            getWorld()->addtoScore(150);
+            getWorld()->increaseScore(150);
         }
         getWorld()->getGhostRacer()->damage(5);
         return;
     }
-    double delta_x = getX() - getWorld()->getGhostRacer()->getX();
-    if(delta_x > -30 && delta_x < 0)
+    if(getY() > getWorld()->getGhostRacer()->getY())
     {
-        setDirection(270);
-        setHSpeed(1);
-    }
-    else if(delta_x > 0 && delta_x < 30)
-    {
-        setDirection(270);
-        setHSpeed(-1);
-    }
-    else if(delta_x == 0)
-    {
-        setDirection(270);
-        setHSpeed(0);
+        double delta_x = getX() - getWorld()->getGhostRacer()->getX();
+        if(delta_x > -30 && delta_x < 0)
+        {
+            setDirection(270);
+            setHSpeed(1);
+        }
+        else if(delta_x > 0 && delta_x < 30)
+        {
+            setDirection(270);
+            setHSpeed(-1);
+        }
+        else if(delta_x == 0)
+        {
+            setDirection(270);
+            setHSpeed(0);
+        }
     }
     //c) decrease number of ticks before it grunts next
     m_timeToGrunt--;
@@ -358,7 +360,7 @@ bool ZombiePed::beSprayedIfAppropriate()
 {
     if(damage(1) && !getWorld()->overlap(this, getWorld()->getGhostRacer()))
     {
-        getWorld()->addtoScore(150);
+        getWorld()->increaseScore(150);
         if(randInt(1, 5)==1)
         {
             getWorld()->addActor(new HealingGoodie(getWorld(), getX(), getY()));
@@ -453,12 +455,12 @@ void ZombieCab::doSomething()
         if(getX() <= getWorld()->getGhostRacer()->getX())
         {
             setHSpeed(-5);
-            setDirection(120+randInt(0, 20));
+            setDirection(120+randInt(0, 19));
         }
         else if(getX() > getWorld()->getGhostRacer()->getX())
         {
             setHSpeed(5);
-            setDirection(60-randInt(0, 20));
+            setDirection(60-randInt(0, 19));
         }
         m_hasDamagedGhostRacer = true;
     }
@@ -508,10 +510,10 @@ void ZombieCab::doSomething()
     }
 }
 bool ZombieCab::beSprayedIfAppropriate()
-{//TODO: finish with oil slick
+{
     if(damage(1))
     {
-        getWorld()->addtoScore(200);
+        getWorld()->increaseScore(200);
         if(randInt(1, 5)==1)
             getWorld()->addActor(new OilSlick(getWorld(), getX(), getY()));
     }
@@ -550,7 +552,7 @@ void GhostRacerActivatedObject::doSomething()
         if(selfDestructs())
             die();
         getWorld()->playSound(getSound());
-        getWorld()->addtoScore(getScoreIncrease());
+        getWorld()->increaseScore(getScoreIncrease());
     }
 }
 
@@ -583,7 +585,7 @@ GhostRacerActivatedObject(world, IID_SOUL_GOODIE, startX, startY, 4, 0)
 
 void SoulGoodie::doActivity(GhostRacer *gr)
 {
-    getWorld()->saveSoul();
+    gr->getWorld()->saveSoul();
 }
 
 int SoulGoodie::getScoreIncrease() const

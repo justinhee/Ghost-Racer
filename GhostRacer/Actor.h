@@ -4,6 +4,7 @@
 #include "GraphObject.h"
 #include "GameConstants.h"
 
+const double PI = 4 * atan(1.0);
 // Students:  Add code to this file, Actor.cpp, StudentWorld.h, and StudentWorld.cpp
 
 
@@ -15,7 +16,7 @@ class Actor : public GraphObject
 public:
     Actor(StudentWorld* world, int imageID, double startX, double startY, int startDirection, double size, int depth, double VSpeed = 0, double HSpeed = 0);
     virtual void doSomething() = 0;
-    virtual bool isAlive() const;
+    bool isAlive() const;
     virtual bool isCollisionAvoidanceWorthy() const;
     StudentWorld* getWorld() const;
     double getVSpeed() const;
@@ -23,7 +24,7 @@ public:
     double getHSpeed() const;
     void setHSpeed(double newHSpeed);
     virtual void die();
-    virtual bool move();
+    bool move();
     virtual bool beSprayedIfAppropriate();
     
 private:
@@ -48,7 +49,7 @@ public:
 
       // Do what the spec says happens when hp units of damage is inflicted.
       // Return true if this agent dies as a result, otherwise false.
-    virtual bool damage(int damage);
+    bool damage(int damage);
 
       // What sound should play when this agent is damaged but does not die?
     virtual int soundWhenHurt() const;

@@ -3,11 +3,13 @@
 #define STUDENTWORLD_H_
 
 #include "GameWorld.h"
-#include "Actor.h"
 #include <string>
 #include <vector>
 
 // Students:  Add code to this file, StudentWorld.cpp, Actor.h, and Actor.cpp
+
+const int LEFT_EDGE = ROAD_CENTER - ROAD_WIDTH/2;
+const int RIGHT_EDGE = ROAD_CENTER + ROAD_WIDTH/2;
 
 class Actor;
 class GhostRacer;
@@ -23,7 +25,6 @@ public:
     GhostRacer* getGhostRacer() const;
     bool overlap(Actor* a1, Actor* a2) const;
     void saveSoul();
-    void addtoScore(int score);
     void addActor(Actor* actor);
     bool sprayFirstAppropriateActor(Actor* a);
     void closestCollisionActorTopAndBottomLane(int lane, Actor*& closestToTop, Actor*& closestToBottom);
